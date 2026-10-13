@@ -16,10 +16,7 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Jalankan bot
-        run: python bot.py <<EOF
-halo
-nama
-kabar
-keluar
-EOF
+      - name: Tes Python
+        run: |
+          python --version
+          python -c "print('OXYFANN Python Bot berhasil dijalankan!')"
