@@ -1,21 +1,25 @@
 
-name: OXYFANN Python Bot
+name: OXYFANN Telegram Bot
 
 on:
   workflow_dispatch:
 
 jobs:
-  test:
+  telegram-bot:
     runs-on: ubuntu-latest
+    timeout-minutes: 350
+
     steps:
-      - name: Checkout repository
+      - name: Ambil kode
         uses: actions/checkout@v4
 
-      - name: Setup Python
+      - name: Siapkan Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
 
-      - name: Test Python
-        run: python -c "print('OXYFANN Python Bot berhasil!')"
+      - name: Jalankan Telegram Bot
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+        run: python -u bot.py
         
