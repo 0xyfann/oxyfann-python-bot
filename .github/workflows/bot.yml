@@ -1,0 +1,25 @@
+
+name: OXYFANN Python Bot
+
+on:
+  workflow_dispatch:
+
+jobs:
+  run-bot:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ambil kode
+        uses: actions/checkout@v4
+
+      - name: Siapkan Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Jalankan bot
+        run: python bot.py <<EOF
+halo
+nama
+kabar
+keluar
+EOF
