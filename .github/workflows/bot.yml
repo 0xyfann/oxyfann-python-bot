@@ -1,13 +1,16 @@
-
-name: OXYFANN Telegram Bot
+name: OXYFANN AI Agent
 
 on:
   workflow_dispatch:
+  push:
+    paths:
+      - 'bot.py'
+      - 'requirements.txt'
+      - '.github/workflows/bot.yml'
 
 jobs:
-  telegram-bot:
+  run-bot:
     runs-on: ubuntu-latest
-    timeout-minutes: 350
 
     steps:
       - name: Ambil kode
@@ -16,10 +19,13 @@ jobs:
       - name: Siapkan Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.12"
+          python-version: '3.11'
 
-      - name: Jalankan Telegram Bot
+      - name: Instal library
+        run: pip install -r requirements.txt
+
+      - name: Jalankan OXYFANN AI
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-        run: python -u bot.py
-        
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: python bot.py
