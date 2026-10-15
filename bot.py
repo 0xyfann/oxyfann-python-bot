@@ -21,7 +21,7 @@ async def chat(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     try:
         response = ai.models.generate_content(
-            model="gemini-2.5-flash",
+            model="gemini-3.8-flash",
             contents=question
         )
         answer = response.text or "Maaf, AI belum menghasilkan jawaban."
