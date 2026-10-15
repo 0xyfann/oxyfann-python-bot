@@ -1,64 +1,44 @@
-
 import os
-import json
-import urllib.request
-import urllib.parse
-import time
+import logging
+from telegram import Update
+from telegram.ext import Application, CommandHandler, MessageHandler, ContextTypes, filters
+from google import genai
 
-TOKEN = os.environ["TELEGRAM_BOT_TOKEN"]
-BASE_URL = f"https://api.telegram.org/bot{TOKEN}/"
+logging.basicConfig(level=logging.INFO)
 
-def kirim_pesan(chat_id, teks):
-    data = urllib.parse.urlencode({
-        "chat_id": chat_id,
-        "text": teks
-    }).encode()
+TELEGRAM_TOKEN = os.environ["TELEGRAM_BOT_TOKEN"]
+GEMINI_API_KEY = os.environ["GEMINI_API_KEY"]
 
-    req = urllib.request.Request(
-        BASE_URL + "sendMessage",
-        data=data
+ai = genai.Client(api_key=GEMINI_API_KEY)
+
+async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await update.message.reply_text(
+        "Halo! Saya OXYFANN AI 🤖\nSilakan kirim pertanyaan."
     )
 
-    urllib.request.urlopen(req, timeout=15)
+async def chat(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    question = update.message.text
 
-def balas(pesan):
-    pesan = pesan.lower().strip()
-
-    if "halo" in pesan:
-        return "Halo juga! 👋 Selamat datang di OXYFANN Bot."
-    elif "nama" in pesan:
-        return "Saya OXYFANN Bot, asisten otomatis."
-    elif "kabar" in pesan:
-        return "Saya baik! Ada yang bisa saya bantu?"
-    elif "terima kasih" in pesan:
-        return "Sama-sama! 😊"
-    else:
-        return "Maaf, saya belum mengerti. Coba ketik: halo, nama, atau kabar."
-
-offset = 0
-
-print("OXYFANN Telegram Bot aktif!")
-
-while True:
     try:
-        url = BASE_URL + "getUpdates?" + urllib.parse.urlencode({
-            "offset": offset,
-            "timeout": 25
-        })
+        response = ai.models.generate_content(
+            model="gemini-2.5-flash",
+            contents=question
+        )
+        answer = response.text or "Maaf, AI belum menghasilkan jawaban."
+        await update.message.reply_text(answer[:4000])
 
-        with urllib.request.urlopen(url, timeout=35) as response:
-            hasil = json.loads(response.read().decode())
+    except Exception:
+        logging.exception("AI request failed")
+        await update.message.reply_text(
+            "Maaf, AI sedang mengalami kendala. Coba lagi nanti."
+        )
 
-        for update in hasil.get("result", []):
-            offset = update["update_id"] + 1
-            pesan = update.get("message", {})
-            teks = pesan.get("text")
-            chat = pesan.get("chat", {})
+def main():
+    app = Application.builder().token(TELEGRAM_TOKEN).build()
+    app.add_handler(CommandHandler("start", start))
+    app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, chat))
+    print("OXYFANN AI Agent berjalan!")
+    app.run_polling()
 
-            if teks and chat.get("id"):
-                kirim_pesan(chat["id"], balas(teks))
-
-    except Exception as error:
-        print("Koneksi bermasalah:", error)
-        time.sleep(5)
-        
+if __name__ == "__main__":
+    main()
